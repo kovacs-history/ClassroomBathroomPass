@@ -4,36 +4,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bathroom Pass</title>
+<title>Classroom Bathroom Pass</title>
 <style>
-body {font-family:Arial,sans-serif;background:#f3f6fa;color:#172334;padding:20px}
-main {max-width:600px;margin:30px auto;background:white;padding:25px;border-radius:16px}
-h1{text-align:center}
-#status{padding:25px;text-align:center;font-size:26px;font-weight:bold;border-radius:12px;background:#e5e7eb}
-#details{text-align:center}
-.green{background:#dcfce7!important;color:#166534}
-.red{background:#fee2e2!important;color:#991b1b}
-.amber{background:#fef3c7!important;color:#92400e}
-li{margin:9px 0}
+*{box-sizing:border-box}
+body{
+ font-family:Arial,sans-serif;
+ background:#f1f5f9;
+ color:#1e293b;
+ margin:0;
+ padding:20px;
+}
+main{
+ max-width:600px;
+ margin:25px auto;
+ background:white;
+ padding:28px;
+ border-radius:16px;
+ box-shadow:0 4px 18px #00000012;
+}
+h1{text-align:center;margin-bottom:5px}
+.subtitle{text-align:center;color:#64748b}
+#status{
+ padding:25px 12px;
+ border-radius:12px;
+ text-align:center;
+ font-size:25px;
+ font-weight:bold;
+ margin-top:22px;
+}
+#details{text-align:center;line-height:1.5}
+.green{background:#dcfce7;color:#166534}
+.red{background:#fee2e2;color:#991b1b}
+.amber{background:#fef3c7;color:#92400e}
+#signout{
+ display:none;
+ background:#166534;
+ color:white;
+ padding:18px;
+ border-radius:10px;
+ text-align:center;
+ text-decoration:none;
+ font-size:20px;
+ font-weight:bold;
+ margin:20px 0;
+}
+li{margin:10px 0}
+.note{font-size:12px;color:#64748b}
 </style>
 </head>
 <body>
 <main>
 <h1>🚻 Bathroom Pass</h1>
-<p style="text-align:center">8th Grade Social Studies</p>
-<div id="status">Checking bathroom pass hours...</div>
+<p class="subtitle">8th Grade Social Studies</p>
+
+<div id="status" class="red">
+ Checking bathroom pass hours...
+</div>
 <p id="details"></p>
+
+<a id="signout"
+ href="https://docs.google.com/forms/d/e/1FAIpQLSenryDy_6pLwM_xp7a8_RCozrxnBGNbSJ4sU2iRfwBPgQ8e3A/viewform"
+ target="_blank" rel="noopener noreferrer">
+ 📝 SIGN OUT — OPEN FORM
+</a>
 
 <h2>Before You Leave</h2>
 <ol>
-<li>Check that the status is green.</li>
+<li>Check that the status is GREEN.</li>
 <li>Make sure the classroom hall pass is available.</li>
-<li>When the sign-out form is added, submit your name.</li>
+<li>Click SIGN OUT and submit your name.</li>
 <li>Take and wear the physical hall pass.</li>
 <li>Return the pass when you get back.</li>
 </ol>
 
-<h2>Approved Times</h2>
+<h2>Approved Bathroom Times</h2>
 <ul>
 <li>Period 1: 7:40–8:14 AM</li>
 <li>Period 2: 8:37–9:11 AM</li>
@@ -42,49 +86,76 @@ li{margin:9px 0}
 <li>Period 5: 12:01–12:35 PM</li>
 <li>Period 6: Request an escort</li>
 </ul>
-<p><small>Clock test only. This page does not yet collect names or issue passes. Emergencies and approved accommodations go through the teacher. Special bell schedules and school holidays are not detected.</small></p>
+
+<p class="note">
+No independent bathroom passes during sixth period.
+Emergencies and approved accommodations go through
+the teacher. Special bell schedules and school
+holidays are not automatically detected.
+</p>
 </main>
+
 <script>
 const windows=[
-["Period 1",460,494],
-["Period 2",517,551],
-["Period 3",574,608],
-["Period 4",661,698],
-["Period 5",721,755]
+ ["Period 1",460,494],
+ ["Period 2",517,551],
+ ["Period 3",574,608],
+ ["Period 4",661,698],
+ ["Period 5",721,755]
 ];
+
 function refresh(){
-const parts=new Intl.DateTimeFormat("en-US",{
-timeZone:"America/Los_Angeles",
-hour:"2-digit",minute:"2-digit",
-hourCycle:"h23",weekday:"short"
-}).formatToParts(new Date());
-const get=t=>parts.find(p=>p.type===t)?.value;
-const minute=Number(get("hour"))*60+Number(get("minute"));
-const status=document.getElementById("status");
-const details=document.getElementById("details");
-const set=(cls,title,msg)=>{
-status.className=cls;
-status.textContent=title;
-details.textContent=msg;
-};
-if(["Sat","Sun"].includes(get("weekday"))){
-set("red","🔴 NOT RIGHT NOW","No regular classes today.");
-return;
+ const parts=new Intl.DateTimeFormat("en-US",{
+  timeZone:"America/Los_Angeles",
+  hour:"2-digit",
+  minute:"2-digit",
+  hourCycle:"h23",
+  weekday:"short"
+ }).formatToParts(new Date());
+
+ const get=t=>parts.find(p=>p.type===t)?.value;
+ const minute=Number(get("hour"))*60+
+              Number(get("minute"));
+ const day=get("weekday");
+
+ const status=document.getElementById("status");
+ const details=document.getElementById("details");
+ const signout=document.getElementById("signout");
+
+ signout.style.display="none";
+
+ function show(cls,title,message){
+  status.className=cls;
+  status.textContent=title;
+  details.textContent=message;
+ }
+
+ if(day==="Sat"||day==="Sun"){
+  show("red","🔴 NOT RIGHT NOW",
+       "No regular classes today.");
+  return;
+ }
+
+ if(minute>=768&&minute<821){
+  show("amber","🟡 REQUEST AN ESCORT",
+       "Period 6: Ask your teacher for an escort.");
+  return;
+ }
+
+ const match=windows.find(w=>
+  minute>=w[1]&&minute<w[2]
+ );
+
+ if(match){
+  show("green","🟢 YOU MAY GO",
+       match[0]+" — Sign out before leaving.");
+  signout.style.display="block";
+ }else{
+  show("red","🔴 NOT RIGHT NOW",
+       "Bathroom passes are unavailable at this time.");
+ }
 }
-if(minute>=768&&minute<821){
-set("amber","🟡 REQUEST AN ESCORT",
-"Period 6: Ask your teacher for an escort.");
-return;
-}
-const match=windows.find(w=>minute>=w[1]&&minute<w[2]);
-if(match){
-set("green","🟢 YOU MAY GO",
-match[0]+" — Follow the sign-out procedure.");
-}else{
-set("red","🔴 NOT RIGHT NOW",
-"Bathroom passes are unavailable.");
-}
-}
+
 refresh();
 setInterval(refresh,15000);
 </script>
